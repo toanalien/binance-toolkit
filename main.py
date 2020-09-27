@@ -211,12 +211,13 @@ margin_all_closed_orders = list(
 print("\nMargin Orders History")
 print("-" * 156)
 print(
-    "{:>10}{:>15}{:>10}{:>15}{:>10}{:>6}{:>10}{:>15}{:>15}{:>15}{:>23}{:>23}".format(
+    "{:>10}{:>15}{:>10}{:>15}{:>10}{:>10} {:>6}{:>10}{:>10}{:>15}{:>15}{:>23}{:>23}".format(
         "symbol",
         "orderId",
         "origQty",
         "executedQty",
         "price",
+        "gain",
         "side",
         "status",
         "sum",
@@ -230,13 +231,28 @@ print(
 list(
     map(
         lambda x: (
+            x[1].update(
+                {
+                    "price": float(x[1]["cummulativeQuoteQty"])
+                    / float(x[1]["executedQty"])
+                }
+            )
+            if x[1]["type"] == "MARKET"
+            else None,
             print(
-                "{:>10}{:>15}{:>10}{:>15}{:>10}{:>6}{:>10}{:>15.4f}{:>15}{:>15}{:>23}{:>23}".format(
+                "{:>10}{:>15}{:>10}{:>15}{:>10}{:10.2f}%{:>6}{:>10}{:10.2f}{:>15}{:>15}{:>23}{:>23}".format(
                     x[1]["symbol"],
                     x[1]["orderId"],
                     x[1]["origQty"],
                     x[1]["executedQty"],
                     x[1]["price"],
+                    (
+                        float(dict_ticker_price[x[1]["symbol"]]["last"])
+                        - float(x[1]["price"])
+                    )
+                    / float(x[1]["price"])
+                    * (-1 if x[1]["side"] == "SELL" else 1)
+                    * 100,
                     x[1]["side"],
                     x[1]["status"],
                     float(x[1]["executedQty"]) * float(x[1]["price"])
