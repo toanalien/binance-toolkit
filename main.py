@@ -180,10 +180,12 @@ margin_all_orders = []
 
 for symbol in intrade_symbol:
     margin_all_orders += exchange.sapi_get_margin_allorders({"symbol": symbol})
-
-    margin_all_orders += exchange.sapi_get_margin_allorders(
-        {"symbol": symbol, "isIsolated": True}
-    )
+    try:
+        margin_all_orders += exchange.sapi_get_margin_allorders(
+            {"symbol": symbol, "isIsolated": True}
+        )
+    except:
+        pass
 
 
 margin_all_closed_orders = list(
