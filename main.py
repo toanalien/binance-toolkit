@@ -43,6 +43,7 @@ exchange = ccxt.binance(
 dict_ticker_price = exchange.fetchTickers()
 dict_ticker_price = {k.replace("/", ""): v for k, v in dict_ticker_price.items()}
 
+# print(dict_ticker_price['BTCUSDT']['bid'])
 intrade_symbol = []
 
 # margin isolated account
@@ -122,10 +123,20 @@ cro_symbol_has_asset = list(
 )
 print("\nMargin Cross Account\n")
 
+margin_cro["totalNetAssetOfUSDT"] = float(margin_cro["totalNetAssetOfBtc"]) * float(
+    dict_ticker_price["BTCUSDT"]["bid"]
+)
+
 list(
     map(
         lambda x: print("{:>20}: {:>10}".format(x, margin_cro[x])),
-        ["marginLevel", "totalAssetOfBtc", "totalLiabilityOfBtc", "totalNetAssetOfBtc"],
+        [
+            "marginLevel",
+            "totalAssetOfBtc",
+            "totalLiabilityOfBtc",
+            "totalNetAssetOfBtc",
+            "totalNetAssetOfUSDT",
+        ],
     )
 )
 print(
@@ -192,7 +203,7 @@ margin_all_closed_orders = list(
     filter(
         lambda x: (float(x["executedQty"]) != 0 or x["status"] == "NEW")
         and float(x["time"]) / 1000.0
-        > (datetime.now() - timedelta(hours=24)).timestamp(),
+        > (datetime.now() - timedelta(hours=48)).timestamp(),
         margin_all_orders,
     )
 )
@@ -246,7 +257,6 @@ list(
             if x[0] != len(margin_all_closed_orders) - 1
             and x[1]["symbol"] != margin_all_closed_orders[x[0] + 1]["symbol"]
             else None,
-            # print(x[0]) if True else None
         ),
         enumerate(margin_all_closed_orders),
     )
