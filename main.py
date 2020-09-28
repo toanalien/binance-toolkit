@@ -117,7 +117,7 @@ list(
 margin_cro = exchange.sapi_get_margin_account()
 cro_symbol_has_asset = list(
     filter(
-        lambda x: x["netAsset"] != "0",
+        lambda x: x["free"] != "0" or x["borrowed"] != "0",
         margin_cro["userAssets"],
     )
 )
@@ -188,6 +188,18 @@ intrade_symbol = list(dict.fromkeys(intrade_symbol))
 
 
 margin_all_orders = []
+
+intrade_symbol = [
+    "LINKUSDT",
+    "BATUSDT",
+    "VETUSDT",
+    "IOSTUSDT",
+    "TRXUSDT",
+    "MATICUSDT",
+    "NEOUSDT",
+    "ETHUSDT",
+    "XTZUSDT",
+]
 
 for symbol in intrade_symbol:
     margin_all_orders += exchange.sapi_get_margin_allorders({"symbol": symbol})
