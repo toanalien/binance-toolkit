@@ -94,9 +94,11 @@ list(
 
 
 def repay(asset):
+    amount = asset['borrowed'] if float(asset['borrowed']) < float(
+        asset['free']) else asset['free']
     trans = exchange.sapi_post_margin_repay({
         'asset': asset['asset'],
-        'amount': asset['free']
+        'amount': amount
     })
     return trans
 
