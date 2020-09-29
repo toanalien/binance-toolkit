@@ -23,3 +23,10 @@ secretKey=<REPLACE>
 ```bash
 python main.py
 ```
+
+### Auto repay
+
+```
+crontab -e
+*/5 * * * * source /home/toanalien/binance-toolkit/venv/bin/activate; python /home/toanalien/binance-toolkit/repay.py >> /home/toanalien/repay.log 2>&1
+```
