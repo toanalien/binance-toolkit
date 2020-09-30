@@ -166,24 +166,14 @@ intrade_symbol = (
         )))
 
 intrade_symbol.remove("")
+intrade_symbol = intrade_symbol + [
+    "LINKUSDT", "BATUSDT", "VETUSDT", "IOSTUSDT", "TRXUSDT", "MATICUSDT",
+    "NEOUSDT", "ETHUSDT", "XTZUSDT", "DOTUSDT", "XTZUSDT", "XMRUSDT", "DOTUSDT"
+]
+
 intrade_symbol = list(dict.fromkeys(intrade_symbol))
 
 margin_all_orders = []
-
-# intrade_symbol = [
-#     "LINKUSDT",
-#     "BATUSDT",
-#     "VETUSDT",
-#     "IOSTUSDT",
-#     "TRXUSDT",
-#     "MATICUSDT",
-#     "NEOUSDT",
-#     "ETHUSDT",
-#     "XTZUSDT",
-#     "DOTUSDT",
-#     "XTZUSDT",
-#     "XMRUSDT"
-# ]
 
 for symbol in intrade_symbol:
     margin_all_orders += exchange.sapi_get_margin_allorders({"symbol": symbol})
@@ -201,7 +191,7 @@ margin_all_closed_orders = list(
     filter(
         lambda x: (float(x["executedQty"]) != 0 or x["status"] == "NEW"
                    ) and float(x["time"]) / 1000.0 >
-        (datetime.now() - timedelta(hours=48)).timestamp(),
+        (datetime.now() - timedelta(hours=36)).timestamp(),
         margin_all_orders,
     ))
 

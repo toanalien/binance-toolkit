@@ -20,7 +20,7 @@ local_tz = os.environ.get("local_tz", "UTC")
 os.environ["TZ"] = local_tz
 time.tzset()
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 api_key = os.environ.get("apiKey")
 secret_key = os.environ.get("secretKey")
@@ -44,6 +44,8 @@ exchange = ccxt.binance({
 
 print(side)
 
+side_effect_type = None
+
 if side == "BUY":
     side_effect_type = "MARGIN_BUY"
     price = round(entry_price * (100 - percent_profit_stoploss) / 100, 4)
@@ -59,6 +61,8 @@ elif side == "SELL":
 else:
     sys.exit()
 
+print("price {}".format(price))
+print("stopLimitPrice {}".format(stopLimitPrice))
 order = exchange.sapi_post_margin_order({
     "symbol": symbol,
     "side": side,
@@ -71,6 +75,7 @@ order = exchange.sapi_post_margin_order({
     "stopLimitPrice": stopLimitPrice,
     "stopPrice": stopPrice,
     "stopLimitTimeInForce": "GTC",
+    
 })
 
 print(order)

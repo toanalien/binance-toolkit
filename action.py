@@ -8,7 +8,7 @@ import time
 from datetime import datetime, timedelta
 from functools import reduce
 from operator import itemgetter
-
+import sys
 import ccxt
 from dotenv import load_dotenv
 
@@ -39,15 +39,31 @@ exchange = ccxt.binance({
     "enableRateLimit": True
 })
 
-margin_markets = exchange.sapi_get_margin_allpairs()
+symbol = sys.argv[1].upper()
+side = sys.argv[2].upper()
+quantity = float(sys.argv[3])
+price = float(sys.argv[4])
 
-symbol_w_usdt = list(
-    map(lambda x: x['symbol']
-        if 'USDT' in x['symbol'] else None, margin_markets))
-symbol_w_usdt.remove(None)
+side_effect_type = None
 
-symbol_w_usdt = list(dict.fromkeys(symbol_w_usdt))
-symbol_w_usdt.remove(None)
+if side == 'BUY':
+    side_effect_type = 'MARGIN_BUY'
+else:
+    side_effect_type = 'NO_SIDE_EFFECT'
 
-for s in symbol_w_usdt:
-    print(s.replace('USDT', ''))
+exchange.sapi_post_margin_loan({
+    'asset': symbol.replace('USDT', ''),
+    'amount': quantity
+})
+
+order = exchange.sapi_post_margin_order({
+    'symbol': symbol,
+    'side': side,
+    'quantity': quantity,
+    'price': price,
+    'type': 'LIMIT',
+    'timeInForce': 'GTC',
+    "sideEffectType": side_effect_type
+})
+
+pp.pprint(order)
