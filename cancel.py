@@ -3,6 +3,7 @@
 
 import logging
 import os
+import sys
 import pprint
 import time
 from datetime import datetime, timedelta
@@ -39,9 +40,12 @@ exchange = ccxt.binance({
     "enableRateLimit": True
 })
 
+symbol = sys.argv[1].upper()
+order_id = sys.argv[2]
+
 order = exchange.sapi_delete_margin_order({
-    'symbol': 'LINKUSDT',
-    'orderId': 123
+    'symbol': symbol,
+    'orderId': order_id
 })
 
 pp.pprint(order)
