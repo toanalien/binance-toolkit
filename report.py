@@ -30,6 +30,7 @@ local_tz = os.environ.get("local_tz", "UTC")
 os.environ["TZ"] = local_tz
 time.tzset()
 
+work_dir = os.path.dirname(os.path.abspath(__file__))
 # logging.basicConfig(level=logging.DEBUG)
 
 api_key = os.environ.get("apiKey")
@@ -53,22 +54,24 @@ SAMPLE_SPREADSHEET_ID = os.environ.get('SAMPLE_SPREADSHEET_ID')
 
 def main():
     creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
+    if os.path.exists(os.path.join(work_dir, 'token.pickle')):
+        with open(os.path.join(work_dir, 'token.pickle'), 'rb') as token:
             creds = pickle.load(token)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = Flow.from_client_secrets_file(
-                'credentials.json', SCOPES, redirect_uri='http://localhost')
+                os.path.join(work_dir, 'credentials.json'),
+                SCOPES,
+                redirect_uri='http://localhost')
             auth_url, _ = flow.authorization_url(prompt='consent')
 
             print('Please go to this URL: {}'.format(auth_url))
             code = input('Enter the authorization code: ')
             flow.fetch_token(code=code)
             creds = flow.credentials
-    with open('token.pickle', 'wb') as token:
+    with open(os.path.join(work_dir, 'token.pickle'), 'wb') as token:
         pickle.dump(creds, token)
 
     service = build('sheets', 'v4', credentials=creds)
@@ -94,8 +97,10 @@ def main():
 
     values = [
         [
-            datetime.now().strftime("%m/%d/%Y %H:%M"),
-            margin_cro["totalNetAssetOfBtc"], margin_cro["totalNetAssetOfUSDT"]
+            # Sep 15, 2020, 6:10:59:59 PM
+            datetime.now().timestamp(),
+            margin_cro["totalNetAssetOfBtc"],
+            margin_cro["totalNetAssetOfUSDT"]
         ],
     ]
 
