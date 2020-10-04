@@ -29,6 +29,7 @@ python main.py
 ```
 crontab -e
 */5 * * * * source /home/toanalien/binance-toolkit/venv/bin/activate; python /home/toanalien/binance-toolkit/repay.py >> /home/toanalien/repay.log 2>&1
+0 * * * * source /home/toanalien/binance-toolkit/venv/bin/activate; python /home/toanalien/binance-toolkit/report.py >> /home/toanalien/report.log 2>&1
 ```
 
 ### Report feature
