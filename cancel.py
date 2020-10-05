@@ -40,12 +40,21 @@ exchange = ccxt.binance({
     "enableRateLimit": True
 })
 
-symbol = sys.argv[1].upper()
-order_id = sys.argv[2]
+if sys.argv[1].upper() == 'ALL':
+    margin_openorders = exchange.sapi_get_margin_openorders()
+    for order in margin_openorders:
+        order = exchange.sapi_delete_margin_order({
+            'symbol': order['symbol'],
+            'orderId': order['orderId']
+        })
+        pp.pprint(order)
+else:
+    symbol = sys.argv[1].upper()
+    order_id = sys.argv[2]
 
-order = exchange.sapi_delete_margin_order({
-    'symbol': symbol,
-    'orderId': order_id
-})
+    order = exchange.sapi_delete_margin_order({
+        'symbol': symbol,
+        'orderId': order_id
+    })
 
-pp.pprint(order)
+    pp.pprint(order)
