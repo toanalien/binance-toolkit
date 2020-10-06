@@ -95,12 +95,15 @@ def main():
         margin_cro["totalNetAssetOfBtc"]) * float(
             dict_ticker_price["BTCUSDT"]["bid"])
 
+    margin_openorders = exchange.sapi_get_margin_openorders()
+
     values = [
         [
             # Sep 15, 2020, 6:10:59:59 PM
             datetime.now().timestamp(),
             margin_cro["totalNetAssetOfBtc"],
-            margin_cro["totalNetAssetOfUSDT"]
+            margin_cro["totalNetAssetOfUSDT"],
+            len(margin_openorders)
         ],
     ]
 
