@@ -125,32 +125,23 @@ list(
     map(
         lambda x: print("{:>20}: {:>10}".format(x, margin_cro[x])),
         [
-            "marginLevel",
-            "totalAssetOfBtc",
-            "totalLiabilityOfBtc",
-            "totalNetAssetOfBtc",
-            "totalNetAssetOfUSDT",
+            "marginLevel", "totalAssetOfBtc", "totalLiabilityOfBtc",
+            "totalNetAssetOfBtc", "totalNetAssetOfUSDT"
         ],
     ))
-print("\n{:>10}{:>15}{:>15}{:>15}{:>15}{:>15}".format(
-    "asset",
-    "borrowed",
-    "free",
-    "interest",
-    "locked",
-    "netAsset",
-))
+print("\n{:>10}{:>15}{:>15}{:>15}{:>15}{:>15}{:>15}".format(
+    "asset", "borrowed", "free", "interest", "locked", "netAsset",
+    "netAssetInUSDT", "totalNetAssetOfUSDT"))
 print("-" * 90)
 list(
     map(
-        lambda x: print("{:>10}{:>15}{:>15}{:>15}{:>15}{:>15}".format(
-            x["asset"],
-            x["borrowed"],
-            x["free"],
-            x["interest"],
-            x["locked"],
-            x["netAsset"],
-        )),
+        lambda x: print("{:>10}{:>15}{:>15}{:>15}{:>15}{:>15}{:>15}".format(
+            x["asset"], x["borrowed"], x["free"], x["interest"], x["locked"],
+            round(float(x["netAsset"]), 4),
+            round(
+                float(x["netAsset"]) * float(dict_ticker_price[
+                    f'{x["asset"]}USDT']["last"])
+                if x['asset'] != 'USDT' else float(x["netAsset"]), 2))),
         cro_symbol_has_asset,
     ))
 
@@ -168,7 +159,8 @@ intrade_symbol = (
 intrade_symbol.remove("")
 intrade_symbol = intrade_symbol + [
     "LINKUSDT", "BATUSDT", "VETUSDT", "IOSTUSDT", "TRXUSDT", "MATICUSDT",
-    "NEOUSDT", "ETHUSDT", "XTZUSDT", "DOTUSDT", "XTZUSDT", "XMRUSDT", "DOTUSDT"
+    "NEOUSDT", "ETHUSDT", "XTZUSDT", "DOTUSDT", "XTZUSDT", "XMRUSDT",
+    "DOTUSDT", "EOSUSDT"
 ]
 
 intrade_symbol = list(dict.fromkeys(intrade_symbol))
@@ -191,7 +183,7 @@ margin_all_closed_orders = list(
     filter(
         lambda x: (float(x["executedQty"]) != 0 or x["status"] == "NEW"
                    ) and float(x["time"]) / 1000.0 >
-        (datetime.now() - timedelta(hours=36)).timestamp(),
+        (datetime.now() - timedelta(hours=48)).timestamp(),
         margin_all_orders,
     ))
 
