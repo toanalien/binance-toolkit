@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from functools import reduce
 from operator import itemgetter
 import ccxt
-
+import requests
 from dotenv import load_dotenv
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -24,6 +24,8 @@ time.tzset()
 
 api_key = os.environ.get("apiKey")
 secret_key = os.environ.get("secretKey")
+bot_token = os.environ.get("bot_token")
+bot_chatID = os.environ.get("bot_chatID")
 
 if not (api_key and secret_key):
     logging.error("api_key or secret_key is empty")
@@ -93,6 +95,12 @@ list(
     ))
 
 
+def telegram_bot_sendtext(bot_message, parse_mode='Markdown'):
+    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=' + parse_mode + '&text=' + bot_message
+    response = requests.get(send_text)
+    return response.json()
+
+
 def repay(asset):
     amount = asset['borrowed'] if float(asset['borrowed']) < float(
         asset['free']) else asset['free']
@@ -100,6 +108,10 @@ def repay(asset):
         'asset': asset['asset'],
         'amount': amount
     })
+
+    telegram_bot_sendtext("{}\n{}".format(
+        datetime.now().strftime('%Y-%m-%d %H:%M'), trans),
+                          parse_mode='HTML')
     return trans
 
 
