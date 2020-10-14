@@ -196,13 +196,6 @@ def takeprofit_handle():
 
 margin_cro = exchange.sapi_get_margin_account()
 
-cro_symbol_has_asset = list(
-    filter(
-        lambda x: x["borrowed"] != "0" and x["free"] != "0",
-        margin_cro["userAssets"],
-    ))
-print("\nMargin Cross Account\n")
-
 margin_cro["totalNetAssetOfUSDT"] = float(
     margin_cro["totalNetAssetOfBtc"]) * float(
         dict_ticker_price["BTCUSDT"]["bid"])
