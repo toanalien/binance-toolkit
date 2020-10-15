@@ -16,6 +16,10 @@ pip install -r requirements.txt
 cat .env
 apiKey=<REPLACE>
 secretKey=<REPLACE>
+local_tz=<REPLACE>
+SAMPLE_SPREADSHEET_ID=<REPLACE>
+bot_token=<REPLACE>
+bot_chatID=<REPLACE>
 ```
 
 ## Run
@@ -27,9 +31,10 @@ python main.py
 ### Auto repay
 
 ```
-crontab -e
+# crontab -e
 */5 * * * * source /home/toanalien/binance-toolkit/venv/bin/activate; python /home/toanalien/binance-toolkit/repay.py >> /home/toanalien/repay.log 2>&1
 0 * * * * source /home/toanalien/binance-toolkit/venv/bin/activate; python /home/toanalien/binance-toolkit/report.py >> /home/toanalien/report.log 2>&1
+*/5 * * * * source /home/centos/binance-toolkit/venv/bin/activate; python /home/centos/binance-toolkit/judge.py STOPLOSS_BALANCE TAKEPROFIT_BALANCE >> /home/centos/log/judge.log 2>&1
 ```
 
 ### Report feature
