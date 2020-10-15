@@ -24,6 +24,7 @@ Idea 2:
 
 import json
 import logging
+import math
 import os
 import pprint
 import sys
@@ -68,6 +69,30 @@ exchange = ccxt.binance({
     "enableRateLimit": True
 })
 
+margin_cro = exchange.sapi_get_margin_account()
+
+
+def precision_and_scale(x):
+    max_digits = 14
+    int_part = int(abs(x))
+    magnitude = 1 if int_part == 0 else int(math.log10(int_part)) + 1
+    if magnitude >= max_digits:
+        return (magnitude, 0)
+    frac_part = abs(x) - int_part
+    multiplier = 10**(max_digits - magnitude)
+    frac_digits = multiplier + int(multiplier * frac_part + 0.5)
+    while frac_digits % 10 == 0:
+        frac_digits /= 10
+    scale = int(math.log10(frac_digits))
+    return (magnitude + scale, scale)
+
+
+dict_ticker_price = exchange.fetchTickers()
+dict_ticker_price = {
+    k.replace("/", ""): v
+    for k, v in dict_ticker_price.items()
+}
+
 
 def telegram_bot_sendtext(bot_message, parse_mode='Markdown'):
     send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=' + parse_mode + '&text=' + bot_message
@@ -83,8 +108,12 @@ dict_ticker_price = {
     for k, v in dict_ticker_price.items()
 }
 
-stoploss = float(sys.argv[1])
-takeprofit = float(sys.argv[2])
+dict_market = {}
+
+markets = exchange.fetchMarkets()
+
+for market in markets:
+    dict_market[market['id']] = market
 
 # print(stoploss)
 
@@ -110,7 +139,6 @@ def cancel_all_orders():
 
 
 def sell_all_assets():
-    margin_cro = exchange.sapi_get_margin_account()
     cro_symbol_has_asset = list(
         filter(
             lambda x: x["free"] != "0" and x["asset"] != "USDT",
@@ -150,8 +178,6 @@ def repay(asset):
 
 
 def repay_all_assets():
-    margin_cro = exchange.sapi_get_margin_account()
-
     cro_symbol_has_asset = list(
         filter(
             lambda x:
@@ -161,13 +187,25 @@ def repay_all_assets():
 
     for symbol in cro_symbol_has_asset:
         try:
+            _symbol = symbol['asset'] + 'USDT'
+            filters = dict_market[_symbol]['info']['filters']
+            LOT_SIZE_FILTER = list(
+                filter(lambda x: x['filterType'] == 'LOT_SIZE',
+                       filters)).pop()
+
+            LOT_SIZE_FILTER_VAL = float(LOT_SIZE_FILTER['minQty'])
+
+            precision = precision_and_scale(float(LOT_SIZE_FILTER_VAL))[-1]
+
             order = exchange.sapi_post_margin_order({
                 'symbol':
-                symbol['asset'] + 'USDT',
+                _symbol,
                 'side':
                 'BUY',
                 'quantity':
-                float(x["borrowed"]) - float(x["free"]),
+                round(
+                    float(symbol["borrowed"]) - float(symbol["free"]),
+                    precision),
                 'type':
                 'MARKET',
             })
@@ -181,7 +219,7 @@ def repay_all_assets():
                 urllib.parse.quote(str(e)), symbol),
                                   parse_mode='HTML')
 
-    print(list(map(repay, cro_symbol_has_asset)))
+    # print(list(map(repay, cro_symbol_has_asset)))
 
 
 def stoploss_handle():
@@ -194,14 +232,20 @@ def takeprofit_handle():
     repay_all_assets()
 
 
-margin_cro = exchange.sapi_get_margin_account()
-
-margin_cro["totalNetAssetOfUSDT"] = float(
-    margin_cro["totalNetAssetOfBtc"]) * float(
-        dict_ticker_price["BTCUSDT"]["bid"])
-
-if margin_cro["totalNetAssetOfUSDT"] > takeprofit:
+if sys.argv[1] == 'take':
     takeprofit_handle()
-
-if margin_cro["totalNetAssetOfUSDT"] < stoploss:
+elif sys.argv[1] == 'stop':
     stoploss_handle()
+else:
+    margin_cro = exchange.sapi_get_margin_account()
+    margin_cro["totalNetAssetOfUSDT"] = float(
+        margin_cro["totalNetAssetOfBtc"]) * float(
+            dict_ticker_price["BTCUSDT"]["bid"])
+    stoploss = float(sys.argv[1])
+    takeprofit = float(sys.argv[2])
+
+    if margin_cro["totalNetAssetOfUSDT"] > takeprofit:
+        takeprofit_handle()
+
+    if margin_cro["totalNetAssetOfUSDT"] < stoploss:
+        stoploss_handle()
